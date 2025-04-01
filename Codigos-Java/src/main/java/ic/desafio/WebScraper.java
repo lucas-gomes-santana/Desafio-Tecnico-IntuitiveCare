@@ -1,75 +1,78 @@
 package ic.desafio;
 
 import net.lingala.zip4j.ZipFile;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class WebScraper {
 	private static final String ANEXOS_DIR = "../Outros_Arquivos/Anexos";
 	private static final String ZIP_FILE = ANEXOS_DIR + "/Anexos_Compactados.zip";
+	private static final String ANS_URL = "https://www.gov.br/ans/pt-br/acesso-a-informacao/participacao-da-sociedade/atualizacao-do-rol-de-procedimentos";
 
 	public static void main(String[] args) {
-		Scanner scanner = new Scanner(System.in);
-
 		try {
 			// Cria o diretório automaticamente caso ele não exista
-			Path anexosPath = Paths.get(ANEXOS_DIR);
-			if (!Files.exists(anexosPath)) {
-				Files.createDirectories(anexosPath);
+			Files.createDirectories(Paths.get(ANEXOS_DIR));
+
+			System.out.println("Acessando o site da ANS...");
+			Document doc = Jsoup.connect(ANS_URL).get();
+
+			// Procura os links dos anexos
+			List<Element> pdfLinks = new ArrayList<>();
+			for (Element link : doc.select("a[href$=.pdf]")) {
+				String linkText = link.text();
+				String href = link.attr("href").toLowerCase();
+
+				if (linkText.contains("Anexo") || href.contains("anexo")) {
+					pdfLinks.add(link);
+				}
 			}
 
-			// Solicita os links dos Anexos
-			System.out.print("Insira a URL completa do Anexo_I.pdf: ");
-			String url1 = scanner.nextLine().trim();
-			System.out.print("Insira a URL completa do Anexo_II.pdf: ");
-			String url2 = scanner.nextLine().trim();
+			if (pdfLinks.isEmpty()) {
+				throw new IOException("Nenhum link de Anexo encontrado na página!");
+			}
 
 			List<String> downloadedFiles = new ArrayList<>();
 
-			// Download dos Anexos 1 e 2
-			String fileName1 = "Anexo_I.pdf";
-			downloadFile(url1, ANEXOS_DIR + "/" + fileName1);
-			downloadedFiles.add(ANEXOS_DIR + "/" + fileName1);
-			String fileName2 = "Anexo_II.pdf";
-			downloadFile(url2, ANEXOS_DIR + "/" + fileName2);
-			downloadedFiles.add(ANEXOS_DIR + "/" + fileName2);
+			for (Element link : pdfLinks) {
+				String pdfUrl = link.attr("abs:href");
+				String fileName = pdfUrl.substring(pdfUrl.lastIndexOf('/') + 1);
+				String destination = ANEXOS_DIR + "/" + fileName;
 
-			// Compactação dos Anexos baixados
+				downloadFile(pdfUrl, destination);
+				downloadedFiles.add(destination);
+				System.out.println("Encontrado: " + link.text() + " -> " + fileName);
+			}
+
+			// Compacta os arquivos
 			createZip(downloadedFiles);
-			System.out.println("\nProcesso concluído com sucesso!");
-			System.out.println("Arquivo ZIP criado em: " + new File(ZIP_FILE).getAbsolutePath());
+			System.out.println("\n✅ Concluído! ZIP criado em: " + new File(ZIP_FILE).getAbsolutePath());
 
 		} catch (Exception e) {
-			System.err.println(e.getMessage());
+			System.err.println("❌ Erro: " + e.getMessage());
 			e.printStackTrace();
-		} finally {
-			scanner.close();
 		}
 	}
 
 	private static void downloadFile(String fileUrl, String destination) throws IOException {
-		System.out.println("Baixando: " + fileUrl);
-
+		System.out.println("\nBaixando: " + fileUrl);
 		try (InputStream in = new URL(fileUrl).openStream()) {
-			Files.copy(in, Paths.get(destination), StandardCopyOption.REPLACE_EXISTING);
+			long bytes = Files.copy(in, Paths.get(destination), StandardCopyOption.REPLACE_EXISTING);
+			System.out.println("✔️ Salvo (" + bytes / 1024 + " KB): " + destination);
 		}
-		System.out.println("Salvo em: " + destination);
 	}
 
 	private static void createZip(List<String> files) throws IOException {
-		System.out.println("\nCriando arquivo ZIP...");
+		System.out.println("\nCompactando...");
 		ZipFile zipFile = new ZipFile(ZIP_FILE);
-
 		for (String file : files) {
 			zipFile.addFile(new File(file));
-		}
-
-		// Exclui os Anexos após compactar
-		for (String file : files) {
 			Files.deleteIfExists(Paths.get(file));
 		}
 	}
