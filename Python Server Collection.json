@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "ANS Procedimentos API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Buscar Procedimentos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8000/api/buscar?termo={{termo}}&limite={{limite}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8000",
+          "path": ["api","buscar"],
+          "query": [
+            {"key": "termo", "value": "{{termo}}"},
+            {"key": "limite", "value": "{{limite}}"}
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {"key": "termo", "value": "odontol"},
+    {"key": "limite", "value": "5"}
+  ]
+}
