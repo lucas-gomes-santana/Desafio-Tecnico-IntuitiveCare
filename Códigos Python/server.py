@@ -9,22 +9,22 @@ from typing import List, Dict, Any
 
 app = FastAPI()
 
-# Configuração de caminhos
 BASE_DIR = Path(__file__).parent.absolute()
 ANEXOS_DIR = BASE_DIR.parent / "Anexos"
 ZIP_FILE = ANEXOS_DIR / "Teste_Lucas_Gomes_Santana.zip"
 CSV_FILE = ANEXOS_DIR / "Rol_Procedimentos.csv"
 
-# Configura CORS
+
+# Configura o CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Ajuste para a porta do seu Vite
+    allow_origins=["http://localhost:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Extrai a planilha.csv do ZIP se necessário
 def extrair_csv():
-    """Extrai o CSV do ZIP se necessário"""
     if not CSV_FILE.exists() and ZIP_FILE.exists():
         with zipfile.ZipFile(ZIP_FILE, 'r') as zip_ref:
             zip_ref.extractall(ANEXOS_DIR)
@@ -37,7 +37,7 @@ async def startup_event():
 
 @app.get("/api/buscar", response_model=List[Dict[str, Any]])
 async def buscar_procedimentos(termo: str, limite: int = 10):
-    """Busca no CSV com tipagem para TypeScript"""
+
     try:
         df = pd.read_csv(CSV_FILE, encoding='utf-8-sig')
         mask = df.apply(
@@ -46,6 +46,7 @@ async def buscar_procedimentos(termo: str, limite: int = 10):
         )
         resultados = df[mask].head(limite)
         return resultados.fillna('').to_dict(orient='records')
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
