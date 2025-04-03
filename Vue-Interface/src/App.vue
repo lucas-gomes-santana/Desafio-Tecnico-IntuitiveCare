@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import BuscarOperadoras from './components/BuscarOperadoras.vue'
+import Interface from './components/Interface.vue'
 </script>
 
 <template>
-  <BuscarOperadoras></BuscarOperadoras>
+  <Interface></Interface>
 </template>
