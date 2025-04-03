@@ -1,5 +1,5 @@
 LOAD DATA INFILE '/var/lib/mysql-files/Relatorio_cadop.csv'
-INTO TABLE operadoras
+INTO TABLE operadoras_info
 FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'

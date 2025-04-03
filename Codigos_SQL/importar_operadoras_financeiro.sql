@@ -1,4 +1,4 @@
-LOAD DATA INFILE '/var/lib/mysql-files/operadoras_financeiro.csv'
+LOAD DATA INFILE '/var/lib/mysql-files/1T2024.csv'
 INTO TABLE operadoras_financeiro
 FIELDS TERMINATED BY ';'
 ENCLOSED BY '"'
