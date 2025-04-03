@@ -52,10 +52,10 @@ public class WebScraper {
 
 			// Compacta os arquivos
 			createZip(downloadedFiles);
-			System.out.println("\n✅ Concluído! ZIP criado em: " + new File(ZIP_FILE).getAbsolutePath());
+			System.out.println("\nZIP criado em: " + new File(ZIP_FILE).getAbsolutePath() + " com sucesso!");
 
 		} catch (Exception e) {
-			System.err.println("❌ Erro: " + e.getMessage());
+			System.err.println("Erro: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -64,13 +64,13 @@ public class WebScraper {
 		System.out.println("\nBaixando: " + fileUrl);
 		try (InputStream in = new URL(fileUrl).openStream()) {
 			long bytes = Files.copy(in, Paths.get(destination), StandardCopyOption.REPLACE_EXISTING);
-			System.out.println("✔️ Salvo (" + bytes / 1024 + " KB): " + destination);
 		}
 	}
 
 	private static void createZip(List<String> files) throws IOException {
 		System.out.println("\nCompactando...");
 		ZipFile zipFile = new ZipFile(ZIP_FILE);
+
 		for (String file : files) {
 			zipFile.addFile(new File(file));
 			Files.deleteIfExists(Paths.get(file));
